@@ -1,0 +1,23 @@
+{
+    "window_w": 500,
+    "window_h": 500,
+    "width": 63,
+    "height": 130,
+    "speed": 50,
+    "x": 285,
+    "y": 380,
+    "road_1": 1,
+    "road_2": 2,
+    "speed_1": 50,
+    "left": 125,
+    "right": 125,
+    "size": 10,
+    "enemyX": 300,
+    "enemyY": -150,
+    "enemyX_change": 0.3,
+    "enemyY_change": 20,
+    "enemy_speed": 20,
+    "enemy_width": 50,
+    "enemy_height": 37
+
+}
