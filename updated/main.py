@@ -3,30 +3,24 @@ from setting import *
 import time
 import random
 from datetime import datetime
-
+from enemy import EnemyClass
 pygame.init()
+frame_per_second = 10
+pygame.time.set_timer(pygame.USEREVENT, 2000)
 
 
-# Размер окна
-window = pygame.display.set_mode((data["window_w"], data["window_h"]))
-
-# Название игры
+window = pygame.display.set_mode((data["window_width"], data["window_height"]))
 pygame.display.set_caption("Car Game")
-
-# Импортируем картинки
-carImage = pygame.image.load("assets/car.png")
-enemyImage = pygame.image.load("assets/enemy.png")
+car_image = pygame.image.load("assets/car.png")
 grass = pygame.image.load("assets/grass.jpg")
 yellow_strip = pygame.image.load("assets/yellow_strip.jpg")
 strip = pygame.image.load("assets/strip.jpg")
-
-# Время для цикла (Наш цикл будет выполняться каждую секунду)
 clock = pygame.time.Clock()
+enemy_images =['enemy.png', 'enemy_2.png']
+enemy_in_background = [pygame.image.load('assets/'+path).convert_alpha() for path in enemy_images]
 
-# Здесь рисуем в окне
-# Вынесли чтобы все не писать в одном месте
-def drawWindow():
-    window.fill(GRAY)
+def draw_background():
+    window.fill(background_color_gray)
     window.blit(grass, (0, 0))
     window.blit(grass, (400, 0))
     window.blit(yellow_strip, (230, 0))
@@ -43,26 +37,9 @@ def drawWindow():
     window.blit(strip, (350, 0))
     pygame.display.update()
 
-
-# Враг
-def enemy(enemyX, enemyY):
-    window.blit(enemyImage, (enemyX, enemyY))
-
-
-# Машина
-def car(x, y):
-    window.blit(carImage, (x, y))
-
-
-# один основной цикл
-# Пока она равна True цикл наш будет выполняться бесконечно
-# как только мы что либо сделаем не так то мы эту переменную сделаем False то сразу выйдем из цикла
-
-# Для текста
 def text_objects(text, font):
-    textsurface = font.render(text, True, black)
+    textsurface = font.render(text, True, scoreboard_color_black)
     return textsurface, textsurface.get_rect()
-
 
 def message_display(text):
     largetext = pygame.font.Font("freesansbold.ttf", 30)
@@ -73,34 +50,43 @@ def message_display(text):
     time.sleep(3)
     game_loop()
 
-
 def crash():
     message_display("Opps, try again")
 
 
 def score_system(passed, score):
     font = pygame.font.SysFont(None, 25)
-    text = font.render("Passed  " + str(passed), True, black)
-    score = font.render("Score  " + str(score), True, red)
+    text = font.render("Passed  " + str(passed), True, scoreboard_color_black)
+    score = font.render("Score  " + str(score), True, scoreboard_color_red)
     window.blit(text, (0, 50))
     window.blit(score, (0, 30))
 
 
+def create_enemy(group):
+    enemy_x = 320
+    indx = randint(0, len(enemy_in_background)-1)
+    speed = randint(1,4)
+    return EnemyClass(enemy_x,enemy_speed,enemy_in_background[indx], group)
+
+enemy = pygame.sprite.Group()
+create_enemy(enemy)
+
+
+# Машина
+def car(car_x, car_y):
+    window.blit(car_image, (car_x, car_y))
+    
+
 def game_loop():
     close = False
-    x = data["x"]
-    y = data["y"]
+    car_x = data["car_x"]
+    car_y = data["car_y"]
     y2 = 100
-    enemy_speed = data["enemy_speed"]
-    enemyX = data["enemyX"]
-    enemyY = data["enemyY"]
-    enemyX_change = data["enemyX_change"]
-    enemyY_change = data["enemyY_change"]
-    enemy_width = data["enemy_width"]
-    enemy_height = data["enemy_height"]
     passed = 0
     score = 0
     level = 0
+    enemy_y = data["enemy_y"]
+    enemy_width = data['enemy_width']
 
     # time for car
     timeforcar = datetime.timestamp(datetime.now()) + 3
@@ -112,65 +98,60 @@ def game_loop():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 close = True
-
-        # х и у координаты для машины
-        # keys = pygame.key.get_pressed()
-
-        # if keys[pygame.K_LEFT] and x > 155:
-        #     x -= data["left"]
-
-        # if keys[pygame.K_RIGHT] and x < 500 - width - 155:
-        #     x += data["right"]
-
+            elif event.type == pygame.USEREVENT:
+                create_enemy(enemy)
+           
         # передвижение машины
         if timeforcar < datetime.timestamp(datetime.now()):
             timeforcar = datetime.timestamp(datetime.now()) + 1.7
             if direction:
-                x -= data["right"]
+                car_x -= data["turn_right"]
                 direction = False
             else:
-                x += data["left"]
+                car_x += data["turn_left"]
                 direction = True
-
-        # Задний фон
-        drawWindow()
+        draw_background()
 
         # Враг
-        enemyY -= enemy_speed / 4
-        enemy(enemyX, enemyY)
-        enemyY += enemy_speed
-        if enemyY > window_height:
-            enemyY = 0
-            passed += 1
-            score = passed * 10
+        # enemy_y -= enemy_speed / 4
+        # enemy_y += enemy_speed
+        # if enemy_y > window_height:
+        #     enemy_y = 0
+        #     passed += 1
+        #     score = passed * 10
         #     if int(passed) % 5 == 0:
         #         level += 1
         #         font = pygame.font.SysFont(None, 100)
-        #         text = font.render("Level  " + str(level), True, black)
+        #         text = font.render("Level  " + str(level), True, scoreboard_color_black)
         #         window.blit(text, (100, 200))
         #         pygame.display.update()
         #         time.sleep(2)
 
-        window.blit(carImage, (x, y))
+        window.blit(car_image, (car_x, car_y))
+        
 
         # # # Возвращает размер и местоположение травы get_rect()
         rel_y = y2 % grass.get_rect().width
         window.blit(grass, (0, rel_y - grass.get_rect().width))
         window.blit(grass, (400, rel_y - grass.get_rect().width))
-        y2 += speed
+        y2 += car_speed
 
         # Для столкновения с врагом
-        # if y < enemyY:
+        # if car_y < enemy_y:
         #     if (
-        #         x > enemyX
-        #         and x < enemyX + enemy_width
-        #         or x + car_width > enemyX
-        #         and x + car_width < enemyX + +enemy_width
+        #         car_x < enemy_x
+        #         and car_x > enemy_x + enemy_width
+        #         or car_x + car_width < enemy_x
+        #         and car_x + car_width < enemy_x + enemy_width
         #     ):
         #         crash()
+
         score_system(passed, score)
+        enemy.draw(window)
         pygame.display.update()
-        clock.tick(20)
+        clock.tick(frame_per_second)
+        enemy.update(window_height)
+        
 
 
 game_loop()

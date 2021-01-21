@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 
 
-f = open("/Users/gulimmoldash/Downloads/MineGame/json/car.json")
+f = open("/home/gulim/CarGames/MineGame/json/car.json")
 data = json.load(f)
 print(data)
 
